@@ -149,9 +149,11 @@ def load_weights(ckpt_dir: Path, n_layers: int = 16):
   except RuntimeError:
     print("GPU not found. Using CPU instead.")
     device = jax.devices("cpu")[0]
+  print('asdf')
   for file in ckpt_dir.glob("*.npy"):
     name = '.'.join(str(file).split('/')[-1].split('.')[:-1])
     weight = jnp.load(file=file, mmap_mode='r', allow_pickle=True)
+    print(f'stored {name}')
     w[name] = jax.device_put(weight, device)
   for i in range(n_layers):
     layer_weights.append(LayerWeights(

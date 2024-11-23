@@ -17,7 +17,7 @@ from pathlib import Path
 
 from entropix.tokenizer import Tokenizer
 
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 torch.set_float32_matmul_precision('high')
 
 DEFAULT_MASK_VALUE = -0.7 * float(torch.finfo(torch.float32).max)
@@ -291,7 +291,7 @@ def multinomial_sample_one(probs_sort: torch.Tensor, device: torch.device) -> to
     return sample.long()
 
 
-def _sample(logits, temperature, top_p):
+def  _sample(logits, temperature, top_p):
     """
     Perform top-p (nucleus) sampling on a probability distribution.
 
@@ -380,7 +380,7 @@ def load_weights(ckpt_dir: Path = Path('weights/1B-Instruct'), n_layers: int = 1
   layer_weights = []
   with torch.inference_mode():
     for file in ckpt_dir.glob("*.npy"):
-      name = '.'.join(str(file).split('/')[-1].split('.')[:-1])
+      name = '.'.join(str(file).split('\\')[-1].split('.')[:-1]) # use backslash for windows  
       jax_weight = jnp.load(file=file, mmap_mode='r', allow_pickle=True)
       np_weight = np.array(jax_weight).astype(np.float32)
       weight = torch.from_numpy(np_weight).to(torch.bfloat16).to(device)
@@ -399,7 +399,6 @@ def load_weights(ckpt_dir: Path = Path('weights/1B-Instruct'), n_layers: int = 1
         ffn_norm=w[f'layers.{i}.ffn_norm.weight'],
         attention_norm=w[f'layers.{i}.attention_norm.weight'],
       ))
-
     xfmr_weights = XfmrWeights(
       tok_embeddings=w['tok_embeddings.weight'],
       norm=w['norm.weight'],
